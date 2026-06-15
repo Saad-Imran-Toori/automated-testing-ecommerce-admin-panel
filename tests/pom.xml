@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
-    <groupId>EcommerceTesting</groupId>
-    <artifactId>EcommerceTesting</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    
+
+    <groupId>com.ecommerce</groupId>
+    <artifactId>ecommerce-admin-panel-tests</artifactId>
+    <version>1.0.0</version>
+
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <!-- Java 17 LTS (the test code uses no version-specific syntax above 11). -->
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
+
     <dependencies>
+        <!-- JUnit 5 — used by the HtmlUnit unit tests and the Selenium GUI tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -27,11 +29,13 @@
             <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- HtmlUnit — headless browser for the unit suites -->
         <dependency>
             <groupId>org.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
             <version>4.21.0</version>
         </dependency>
+        <!-- Selenium WebDriver + automatic driver management — GUI and Grid suites -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
@@ -47,6 +51,7 @@
             <artifactId>webdrivermanager</artifactId>
             <version>5.6.3</version>
         </dependency>
+        <!-- TestNG — drives the Selenium Grid parallel suites (run from the IDE / testng.xml) -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -54,5 +59,59 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
+    <build>
+        <plugins>
+            <!--
+              The tests are grouped by type in unit/, selenium/ and grid/ (rather than the
+              default src/test/java). build-helper registers all three as test-source roots so
+              that `mvn test` compiles and runs them as-is.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>add-test-source-folders</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>unit</source>
+                                <source>selenium</source>
+                                <source>grid</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+              Surefire runs the JUnit 5 tests by default (HtmlUnit unit tests + Selenium GUI
+              tests). The JUnit Platform provider is pinned explicitly so the TestNG Grid
+              classes on the classpath don't change provider selection — they are simply
+              ignored here and are run from the IDE via grid/testng.xml instead.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <!-- Don't fail the build if a suite has no runnable tests in a bare env. -->
+                    <failIfNoTests>false</failIfNoTests>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-junit-platform</artifactId>
+                        <version>3.2.5</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

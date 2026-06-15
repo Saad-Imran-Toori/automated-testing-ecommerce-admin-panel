@@ -18,6 +18,10 @@ test-screenshots/
 .cache/
 .wdm/
 
+# ===== PHP / Composer =====
+vendor/
+composer.lock
+
 # ===== Node (if any tooling is added) =====
 node_modules/
 

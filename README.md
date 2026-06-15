@@ -80,7 +80,7 @@ automated-testing-ecommerce-admin-panel/
 | GUI tests        | Selenium WebDriver 4.15.0 + ChromeDriver + WebDriverManager 5.6.3    |
 | Parallel / Grid  | Selenium Grid 4 (Docker) + TestNG 7.8.0                              |
 | API collection   | Postman (Collection v2.1)                                            |
-| Build            | Maven (Java 21)                                                       |
+| Build            | Maven (Java 17+)                                                      |
 
 ---
 
@@ -102,9 +102,10 @@ The test suites expect the app served at **`http://localhost/ecommerce_api/`**.
    # phpMyAdmin → Import → database.sql, or:
    mysql -u root < database.sql
    ```
-4. **Create an admin account** via `admin_signup.html`.
-   > ⚠️ The seeded `admin@example.com` row in `database.sql` contains a malformed bcrypt hash and
-   > **cannot be logged into** — register a fresh admin through the signup page instead.
+4. **Log in.** The import seeds a ready‑to‑use admin:
+   - **email:** `admin@example.com`  **password:** `admin123`
+
+   You can also register a new admin via `admin_signup.html`.
 5. DB credentials live in `backend/config/db_connect.php` (defaults: host `localhost`, db
    `ecommerce_db`, user `root`, empty password — the XAMPP defaults).
 
@@ -135,23 +136,26 @@ All responses are JSON of the form `{ "status": "success" | "error", ... }`.
 
 ## 🧪 Running the Tests
 
+> All Java/PHP test suites talk to the **live application**, so make sure XAMPP (Apache + MySQL) is
+> running and the app is reachable at `http://localhost/ecommerce_api/` before running them.
+
 ### 1. PHP API tests (PHPUnit) — `backend/tests/`
-Hit the live API, so Apache + MySQL must be running.
+A `composer.json` and `phpunit.xml` are included, so from the **repo root**:
 ```bash
-# from the backend/tests directory (requires phpunit on PATH or phpunit.phar)
-phpunit AuthAPITest.php
-phpunit ProductsAPITest.php
-phpunit DatabaseTest.php
+composer install        # one-time: installs PHPUnit into vendor/
+composer test           # runs every test in backend/tests/
+# or target one file:
+vendor/bin/phpunit backend/tests/ProductsAPITest.php
 ```
 Covers: DB connectivity, admin signup + login, and product GET/POST/PUT/DELETE.
 
 ### 2. JUnit 5 + HtmlUnit unit tests — `tests/unit/`
 Headless (no real browser). `AdminSideTest` contains **18** tests across login, signup, dashboard,
 add‑product validation and navigation; `CompleteWebsiteTest` adds page‑structure / CSS / navigation
-checks.
+checks. From the `tests/` folder:
 ```bash
-mvn test -Dtest=AdminSideTest
-mvn test -Dtest=CompleteWebsiteTest
+mvn test                              # runs the unit + Selenium GUI suites
+mvn test -Dtest=AdminSideTest         # just one class
 ```
 
 ### 3. Selenium WebDriver GUI tests — `tests/selenium/`
@@ -163,25 +167,24 @@ mvn test -Dtest=EcommerceAdminPanelTest
 ```
 
 ### 4. Selenium Grid + Docker parallel tests — `tests/grid/`
-Runs the same scenarios on **Chrome and Firefox in parallel** against a Dockerised Selenium Grid.
+Runs the scenarios on **Chrome and Firefox in parallel** against a Dockerised Selenium Grid.
 
 ```bash
 # 1. Start the Grid (hub + chrome + firefox nodes)
 cd tests/grid
 docker compose up -d
 #    Grid console: http://localhost:4444/ui
-
-# 2. Run the parallel TestNG suite (from the Maven project)
-mvn test -DsuiteXmlFile=tests/grid/testng.xml
 ```
-The tests connect to the hub at `http://localhost:4444`; from inside the containers the app is reached
-via `host.docker.internal`. A sample parallel‑run TestNG report is in
-[`screenshots/grid-report/`](screenshots/grid-report/).
+Then run the TestNG suite **from Eclipse** — right‑click `tests/grid/testng.xml` →
+**Run As → TestNG Suite** (the Grid suites use TestNG `@Parameters`, which is driven by the suite
+file rather than Surefire). The tests connect to the hub at `http://localhost:4444`; from inside the
+containers the app is reached via `host.docker.internal`. A sample parallel‑run TestNG report is in
+[`screenshots/grid-report/`](screenshots/grid-report/). Stop the Grid afterwards with `docker compose down`.
 
-> **Note on the Java layout.** Files are grouped by *test type* for readability. The Java sources declare
-> `package com.ecommerce.tests;` (the Grid *demo* uses `package gridtest;`). To build with Maven, place the
-> sources under `src/test/java/com/ecommerce/tests/` (the original Eclipse project layout) — `pom.xml` is
-> provided in `tests/`. Alternatively, import into Eclipse and run **Run As → JUnit/TestNG Test**.
+> **Project layout note.** The Java tests are grouped by type in `tests/unit/`, `tests/selenium/` and
+> `tests/grid/` (instead of the default `src/test/java`). `pom.xml` registers all three as test‑source
+> roots via `build-helper-maven-plugin`, so `mvn test` works without moving anything. Importing
+> `tests/` into Eclipse as a Maven project also works out of the box.
 
 ### 5. Postman collection — `tests/postman/`
 Import [`ecommerce_api.postman_collection.json`](tests/postman/ecommerce_api.postman_collection.json) into
@@ -203,10 +206,11 @@ actual manual Postman testing evidence is in `tests/postman/postman work.docx` a
 ## 📋 Prerequisites Summary
 
 - XAMPP (Apache + MySQL) or any PHP 8 + MySQL/MariaDB stack
-- Java JDK 21 and Maven 3.6+
+- **Java JDK 17+** and **Maven 3.8+** (for the Java suites)
+- **Composer** (for the PHP API tests — pulls in PHPUnit)
 - Google Chrome (and Firefox for the Grid suite)
 - Docker Desktop (for the Selenium Grid suite)
-- PHPUnit (for the PHP API tests) and Postman (for the collection)
+- Postman (to import the API collection)
 
 ---
 

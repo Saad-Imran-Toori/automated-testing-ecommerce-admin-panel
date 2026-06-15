@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS products (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Insert sample admin (password: admin123)
-INSERT INTO admins (first_name, last_name, email, password) 
-VALUES ('Admin', 'User', 'admin@example.com', '\\\.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+-- Insert sample admin (email: admin@example.com  /  password: admin123)
+INSERT INTO admins (first_name, last_name, email, password)
+VALUES ('Admin', 'User', 'admin@example.com', '$2y$10$1RmkgR2au5asHOVj/G/70.R/WkS8D0YR4hQCXuHBs7KJBdDfkTGrS');
 
 -- Insert sample products
 INSERT INTO products (name, description, price, quantity, category) VALUES
