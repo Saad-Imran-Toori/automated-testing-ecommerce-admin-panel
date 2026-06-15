@@ -1,0 +1,27 @@
+# ===== Java / Maven =====
+target/
+bin/
+*.class
+.classpath
+.project
+.settings/
+.factorypath
+
+# ===== IDEs =====
+.idea/
+*.iml
+.vscode/
+
+# ===== Test output / driver caches =====
+test-output/
+test-screenshots/
+.cache/
+.wdm/
+
+# ===== Node (if any tooling is added) =====
+node_modules/
+
+# ===== OS / misc =====
+.DS_Store
+Thumbs.db
+*.log

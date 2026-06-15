@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "testng.dtd">
+
+<suite name="Grid Parallel Suite" parallel="tests" thread-count="2">
+
+    <test name="Chrome Browser Test">
+        <parameter name="browser" value="chrome"/>
+
+        <classes>
+            <class name="gridtest.ParallelGridTest"/>
+        </classes>
+    </test>
+
+    <test name="Firefox Browser Test">
+        <parameter name="browser" value="firefox"/>
+
+        <classes>
+            <class name="gridtest.ParallelGridTest"/>
+        </classes>
+    </test>
+
+</suite>
